@@ -7,7 +7,7 @@ let is_safe ?(remove_index = Int.max_value) line =
   let line = List.filteri line ~f:(fun i _ -> i <> remove_index) in
   fst
   @@ List.fold line
-       ~init:(true, List.nth_exn line 0 - 1)
+       ~init:(true, List.nth_exn line 0)
        ~f:(fun (acc, prev) curr ->
          if Int.abs (curr - prev) > 3 then (false, curr) else (acc, curr))
   && (List.is_sorted_strictly line ~compare:Int.descending
