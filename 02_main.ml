@@ -16,7 +16,8 @@ let solve lines = List.count lines ~f:is_safe
 
 let solve_2 lines =
   List.count lines ~f:(fun line ->
-      List.existsi lines ~f:(fun i _ -> is_safe ~remove_index:i line))
+      List.existsi (String.split_on_chars line ~on:[ ' ' ]) ~f:(fun i _ ->
+          is_safe ~remove_index:i line))
 
 let () =
   let content = In_channel.read_all "data.txt" in
