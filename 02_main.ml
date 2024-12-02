@@ -8,8 +8,7 @@ let is_safe ?(remove_index = Int.max_value) line =
   fst
   @@ List.fold line
        ~init:(true, List.nth_exn line 0)
-       ~f:(fun (acc, prev) curr ->
-         if Int.abs (curr - prev) > 3 then (false, curr) else (acc, curr))
+       ~f:(fun (acc, prev) curr -> (Int.abs (curr - prev) <= 3 && acc, curr))
   && (List.is_sorted_strictly line ~compare:Int.descending
      || List.is_sorted_strictly line ~compare:Int.ascending)
 
