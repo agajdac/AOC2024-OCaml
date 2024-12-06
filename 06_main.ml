@@ -33,37 +33,27 @@ let rec move matrix (x, y) direction cycleMatrix =
     match direction with
     | `Up ->
       cycleMatrix.(y).(x) <- cycleMatrix.(y).(x) lor 0x1;
-      move matrix (x, y - 1) `Up cycleMatrix
+      move matrix (x, y - 1) direction cycleMatrix
     | `Down ->
       cycleMatrix.(y).(x) <- cycleMatrix.(y).(x) lor 0x2;
-      move matrix (x, y + 1) `Down cycleMatrix
+      move matrix (x, y + 1) direction cycleMatrix
     | `Left ->
       cycleMatrix.(y).(x) <- cycleMatrix.(y).(x) lor 0x4;
-      move matrix (x - 1, y) `Left cycleMatrix
+      move matrix (x - 1, y) direction cycleMatrix
     | `Right ->
       cycleMatrix.(y).(x) <- cycleMatrix.(y).(x) lor 0x8;
-      move matrix (x + 1, y) `Right cycleMatrix)
+      move matrix (x + 1, y) direction cycleMatrix)
 
 let get_cycleMatrix matrix =
   Array.init (Array.length matrix) ~f:(fun _ ->
     Array.init (Array.length matrix) ~f:(fun _ -> 0))
 
 let find_cycle matrix (x, y) (ox, oy) =
-  if x = ox && y = oy
-  then false
-  else (
-    let matrix = Array.map (Array.copy matrix) ~f:Array.copy in
-    matrix.(oy).(ox) <- '#';
-    match move matrix (x, y) `Up (get_cycleMatrix matrix) with
-    | None -> true
-    | Some _ -> false)
-
-let solve matrix (x, y) =
-  let savedMatrix = Array.map (Array.copy matrix) ~f:Array.copy in
-  let matrix = move matrix (x, y) `Up (get_cycleMatrix matrix) |> Option.value_exn in
-  ( Array.fold matrix ~init:0 ~f:(fun acc row -> acc + Array.count row ~f:(Char.equal 'Z'))
-  , Array.foldi matrix ~init:0 ~f:(fun i acc row ->
-      acc + Array.counti row ~f:(fun j _ -> find_cycle savedMatrix (x, y) (i, j))) )
+  let matrix = Array.map (Array.copy matrix) ~f:Array.copy in
+  matrix.(oy).(ox) <- '#';
+  match move matrix (x, y) `Up (get_cycleMatrix matrix) with
+  | None -> true
+  | Some _ -> false
 
 let find_guard matrix =
   Array.find_mapi matrix ~f:(fun y row ->
@@ -71,10 +61,22 @@ let find_guard matrix =
       if Char.equal cell '^' then Some (x, y) else None))
   |> Option.value_exn
 
+let solve matrix =
+  let x, y = find_guard matrix in
+  let savedMatrix = Array.map (Array.copy matrix) ~f:Array.copy in
+  let matrix = move matrix (x, y) `Up (get_cycleMatrix matrix) |> Option.value_exn in
+  ( Array.fold matrix ~init:0 ~f:(fun acc row -> acc + Array.count row ~f:(Char.equal 'Z'))
+  , Array.foldi matrix ~init:0 ~f:(fun i acc row ->
+      acc
+      + Array.counti row ~f:(fun j _ ->
+        if Char.equal 'Z' matrix.(j).(i)
+        then find_cycle savedMatrix (x, y) (i, j)
+        else false)) )
+
 let () =
   let lines = In_channel.read_all "data.txt" |> String.split_lines in
   let matrix =
     Array.init (List.length lines) ~f:(fun i -> List.nth_exn lines i |> String.to_array)
   in
-  let x, y = solve matrix (find_guard matrix) in
-  printf "part 1: %d\npart 2: %d\n" x y
+  let part_1, part_2 = solve matrix in
+  printf "part 1: %d\npart 2: %d\n" part_1 part_2
