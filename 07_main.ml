@@ -5,7 +5,7 @@ let parse line =
   match String.split_on_chars line ~on:[ ':' ] with
   | [ hd; tl ] ->
     ( Int.of_string hd
-    , List.map (String.split_on_chars (String.strip tl) ~on:[ ' ' ]) ~f:Int.of_string )
+    , String.strip tl |> String.split_on_chars ~on:[ ' ' ] |> List.map ~f:Int.of_string )
   | _ -> assert false
 
 let rec find_sum concat acc sum = function
@@ -13,7 +13,7 @@ let rec find_sum concat acc sum = function
   | [] -> sum = acc
   | hd :: tl ->
     find_sum concat (acc + hd) sum tl
-    || find_sum concat (hd * if Int.equal acc 0 then 1 else acc) sum tl
+    || find_sum concat (if acc = 0 then hd else hd * acc) sum tl
     || (concat
         && find_sum concat (Int.of_string @@ Int.to_string acc ^ Int.to_string hd) sum tl
        )
