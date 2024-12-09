@@ -4,6 +4,64 @@
 #include <iostream>
 #include <deque>
 
+
+void solve(std::deque<int> nodes, bool part1)
+{
+    int r = nodes.size() - 1;
+    while(r >= 0)
+    {
+        while(r >= 0 && nodes[r] < 0)
+        {
+            --r;
+        }
+
+        int first = nodes[r];
+        int rC = 0;
+        while(r >= 0 && nodes[r] == first)
+        {
+            --r;
+            ++rC;
+            if(part1)
+                break;
+        }
+
+        int l = 0;
+        int lC = 0;
+        while(l <= r)
+        {
+            lC = 0;
+            while(l <= r && nodes[l] != -1)
+            {
+                ++l;
+            }
+
+            while(l <= r && nodes[l] == -1)
+            {
+                ++lC;
+                ++l;
+                if(lC == rC)
+                {
+                    for(int i = 0; i < lC; ++i)
+                    {
+                        std::swap(nodes[l - i - 1], nodes[r + i + 1]);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    long long unsigned ans = 0;
+    for(int i = 0; i < nodes.size(); ++i)
+    {
+        if(nodes[i] != -1)
+        {
+            ans += i * nodes[i];
+        }
+    }
+    std::cout << ans << '\n';
+}
+
 int main()
 {
     std::vector<int> data;
@@ -43,59 +101,8 @@ int main()
         }
     }
 
-    int r = nodes.size() - 1;
-    while(r >= 0)
-    {
-        while(r >= 0 && nodes[r] < 0)
-        {
-            --r;
-        }
-
-        int first = nodes[r];
-        int rC = 0;
-        while(r >= 0 && nodes[r] == first)
-        {
-            --r;
-            ++rC;
-        }
-
-        int l = 0;
-        int lC = 0;
-        while(l <= r)
-        {
-            lC = 0;
-            while(l <= r && nodes[l] != -1)
-            {
-                ++l;
-            }
-
-            while(l <= r && nodes[l] == -1)
-            {
-                ++lC;
-                ++l;
-                if(lC == rC)
-                {
-                    for(int i = 0; i < lC; ++i)
-                    {
-                        std::swap(nodes[l - i - 1], nodes[r + i + 1]);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-
-    // checksum
-    long long unsigned ans = 0;
-    for(int i = 0; i < nodes.size(); ++i)
-    {
-        if(nodes[i] != -1)
-        {
-            ans += i * nodes[i];
-        }
-    }
-    std::cout << ans << '\n';
+    solve(nodes, true);
+    solve(nodes, false);
 
     return 0;
 }
